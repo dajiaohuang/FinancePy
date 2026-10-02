@@ -376,10 +376,11 @@ class DiscountCurve:
         if not isinstance(freq_type, FrequencyTypes):
             raise FinError("Invalid Frequency type.")
 
-        if np.any(t < 0):
+        times, scalar_input = self._to_time_array(t)
+
+        if np.any(times < 0):
             raise FinError("Times to maturity cannot be negative.")
 
-        times, scalar_input = self._to_time_array(t)
         times = np.maximum(times, G_SMALL)
 
         dfs = self.df_t(times)
@@ -696,7 +697,7 @@ class DiscountCurve:
 
         # Build new curve
         bumped_curve = DiscountCurve(
-            value_dt=self.anchor_dt,
+            anchor_dt=self.anchor_dt,
             df_dates=self._df_dates,
             df_values=dfs,
             interp_type=interp_type,
