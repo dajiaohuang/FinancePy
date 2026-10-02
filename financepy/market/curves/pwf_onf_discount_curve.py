@@ -89,6 +89,7 @@ class PWFONFDiscountCurve(DiscountCurve):
         start_dt: Date,
         end_dt: Date,
         level: float = 1.0 * G_BASIS_POINT,
+        curve_dc_type: DayCountTypes = DayCountTypes.ACT_365F,
     ):
         """Generate a discount curve of the shape
                     f(t) = level*1_{startdate < t <= enddate}
@@ -107,14 +108,15 @@ class PWFONFDiscountCurve(DiscountCurve):
         """
         knot_dts = [start_dt, end_dt, end_dt.add_tenor("1D")]
         onfwd_rates = [0.0, level, 0.0]
-        return cls(value_dt, knot_dts, onfwd_rates)
+        return cls(value_dt, knot_dts, onfwd_rates, curve_dc_type)
 
     ####################################################################################
     @classmethod
-    def flat_curve(cls, value_dt: Date, level: float = 1.0 * G_BASIS_POINT):
+    def flat_curve(cls, value_dt: Date, level: float = 1.0 * G_BASIS_POINT,
+                   curve_dc_type: DayCountTypes = DayCountTypes.ACT_365F):
         knot_dts = [value_dt.add_tenor("1Y")]
         onfwd_rates = [level]
-        return cls(value_dt, knot_dts, onfwd_rates)
+        return cls(value_dt, knot_dts, onfwd_rates, curve_dc_type)
 
     ####################################################################################
 

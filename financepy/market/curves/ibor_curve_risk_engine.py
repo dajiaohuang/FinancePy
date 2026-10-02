@@ -190,7 +190,10 @@ def forward_rate_risk_report_custom_grid(
         )
         risk_report.loc[fwdrate_idx, "market_rate"] = base_rate
 
-        fwd_rate_shock = PWFONFDiscountCurve.brick_wall_curve(base_curve.anchor_dt, start_dt, maturity_dt, bump_size)
+        fwd_rate_shock = PWFONFDiscountCurve.brick_wall_curve(
+            base_curve.anchor_dt, start_dt, maturity_dt, bump_size,
+            curve_dc_type=base_curve.curve_dc_type,
+        )
         bumped_curve = CompositeDiscountCurve([base_curve, fwd_rate_shock])
 
         for trade_idx, trade in enumerate(trades):
@@ -285,7 +288,9 @@ def parallel_shift_ladder_report(
         base_values[trade_label] = trade.value(base_curve.anchor_dt, base_curve)
 
     for shift_idx, shift in enumerate(curve_shifts):
-        fwd_rate_shock = PWFONFDiscountCurve.flat_curve(base_curve.anchor_dt, shift)
+        fwd_rate_shock = PWFONFDiscountCurve.flat_curve(
+            base_curve.anchor_dt, shift, curve_dc_type=base_curve.curve_dc_type,
+        )
         bumped_curve = CompositeDiscountCurve([base_curve, fwd_rate_shock])
 
         for trade_idx, trade in enumerate(trades):
