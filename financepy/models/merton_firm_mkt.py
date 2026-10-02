@@ -248,11 +248,11 @@ class MertonFirmMkt(MertonFirm):
         )
         s += label_to_string(
             "IMPLIED ASSET VALUE",
-            self._a,
+            self._asset_value,
         )
         s += label_to_string(
             "IMPLIED ASSET VOLATILITY",
-            self._va,
+            self._asset_volatility,
         )
 
         return s
