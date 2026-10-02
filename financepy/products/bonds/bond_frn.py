@@ -119,6 +119,7 @@ class BondFRN:
         is the level of subsequent future Ibor payments and the discount
         margin."""
 
+        self.accrued_interest(settle_dt, next_cpn)
         dc_counter = DayCount(self.accrual_dc_type)
 
         q = self.quoted_margin
