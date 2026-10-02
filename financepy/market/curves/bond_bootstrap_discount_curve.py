@@ -345,7 +345,7 @@ class BondBootstrapDiscountCurve(DiscountCurve):
             res = optimize.least_squares(
                 _obj_f_curve_build_ls_fast,
                 self._dfs[1:],
-                bounds=(0, 1.0),
+                bounds=(np.finfo(float).tiny, np.inf),
                 ftol=1e-4,
                 xtol=1e-5,
             )
@@ -353,7 +353,7 @@ class BondBootstrapDiscountCurve(DiscountCurve):
             res = optimize.least_squares(
                 _obj_f_curve_build_ls_slow,
                 self._dfs[1:],
-                bounds=(0, 1.0),
+                bounds=(np.finfo(float).tiny, np.inf),
                 ftol=1e-4,
                 xtol=1e-5,
             )
