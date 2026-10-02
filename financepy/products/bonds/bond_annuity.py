@@ -106,11 +106,13 @@ class BondAnnuity:
             raise FinError("Settlement date is maturity date.")
 
         self.settle_dt = settle_dt
-        bd_type = BusDayAdjustTypes.FOLLOWING
-        dg_type = DateGenRuleTypes.BACKWARD
-
         self.cpn_dts = Schedule(
-            settle_dt, self.maturity_dt, self.freq_type, self.cal_type, bd_type, dg_type
+            settle_dt,
+            self.maturity_dt,
+            self.freq_type,
+            self.cal_type,
+            self.bd_type,
+            self.dg_type,
         ).generate()
 
         self._pcd = self.cpn_dts[0]
