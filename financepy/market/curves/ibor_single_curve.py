@@ -216,9 +216,6 @@ class IborSingleCurve(DiscountCurve):
             ibor_swaps=ibor_swaps,
         )
 
-        if FAST:
-            self._precompute_swap_flows()
-
         if do_build:
             self.build_curve(**kwargs)
 
@@ -232,6 +229,9 @@ class IborSingleCurve(DiscountCurve):
         that are local,
         where the value of df[i] does not affect discount factors for t<=t[i-1]
         """
+
+        if FAST:
+            self._precompute_swap_flows()
 
         if Interpolator.suitable_for_bootstrap(self._interp_type):
             self._build_curve_using_1d_solver(**kwargs)
