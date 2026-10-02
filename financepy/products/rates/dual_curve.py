@@ -331,7 +331,13 @@ class IborDualCurve(DiscountCurve):
             # if both dates are after the previous FRA/FUT then need to
             # solve for 2 discount factors simultaneously using root search
 
-            if t_set < oldt_mat and t_mat > oldt_mat:
+            # Spline interpolation changes the FRA start discount factor when
+            # its maturity knot is added, so it needs the root solve below.
+            if (t_set < oldt_mat and t_mat > oldt_mat and self._interp_type in (
+                InterpTypes.FLAT_FWD_RATES,
+                InterpTypes.LINEAR_DISCOUNT,
+                InterpTypes.LINEAR_ZERO_RATES,
+            )):
                 df_mat = fra.maturity_df(self)
                 self._times = np.append(self._times, t_mat)
                 self._dfs = np.append(self._dfs, df_mat)
