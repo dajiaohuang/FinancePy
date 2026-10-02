@@ -155,21 +155,25 @@ class BondEmbeddedOption:
 
         # Generate bond call times and prices
         call_times = []
-        for dt in self.call_dts:
+        call_prices = []
+        for dt, price in zip(self.call_dts, self.call_prices):
             if dt > settle_dt:
                 call_time = (dt - settle_dt) / G_DAYS_IN_YEAR
                 call_times.append(call_time)
+                call_prices.append(price)
         call_times = np.array(call_times)
-        call_prices = np.array(self.call_prices)
+        call_prices = np.array(call_prices)
 
         # Generate bond put times and prices
         put_times = []
-        for dt in self.put_dts:
+        put_prices = []
+        for dt, price in zip(self.put_dts, self.put_prices):
             if dt > settle_dt:
                 put_time = (dt - settle_dt) / G_DAYS_IN_YEAR
                 put_times.append(put_time)
+                put_prices.append(price)
         put_times = np.array(put_times)
-        put_prices = np.array(self.put_prices)
+        put_prices = np.array(put_prices)
 
         maturity_dt = self.bond.maturity_dt
         t_mat = (maturity_dt - settle_dt) / G_DAYS_IN_YEAR
