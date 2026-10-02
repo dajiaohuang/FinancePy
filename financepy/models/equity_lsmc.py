@@ -169,4 +169,9 @@ def equity_lsmc(
 
     value = np.mean(values)
 
+    if is_american:
+        # Time-zero exercise is a single decision based on the expected
+        # continuation value, rather than on each path's future information.
+        value = max(value, exercise_matrix[0, 0])
+
     return value
