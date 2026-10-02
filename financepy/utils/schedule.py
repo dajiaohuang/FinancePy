@@ -143,6 +143,8 @@ class Schedule:
 
         calendar = Calendar(self.cal_type)
         frequency = annual_frequency(self.freq_type)
+        if frequency <= 0 or frequency > 12:
+            raise FinError("Schedule requires a periodic frequency from annual to monthly.")
         num_months = int(12 / frequency)
 
         # Always step from the unadjusted termination date. A previous call may
@@ -198,6 +200,8 @@ class Schedule:
             while next_dt < self.termination_dt:
                 tot_num_months = num_months * len(unadjusted_schedule_dts)
                 next_dt = self.effective_dt.add_months(tot_num_months)
+                if self.end_of_month:
+                    next_dt = next_dt.eom()
                 if next_dt < self.termination_dt:
                     unadjusted_schedule_dts.append(next_dt)
 
