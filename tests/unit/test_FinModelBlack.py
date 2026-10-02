@@ -182,8 +182,8 @@ def test_implied_volatility():
     opt_type = OptionTypes.AMERICAN_CALL
     results = crr_tree_val_avg(
         forward,
-        0.0,
-        0.0,
+        r,
+        r,
         volatility,
         200,
         time_to_expiry,
@@ -198,8 +198,8 @@ def test_implied_volatility():
     opt_type = OptionTypes.AMERICAN_PUT
     results = crr_tree_val_avg(
         forward,
-        0.0,
-        0.0,
+        r,
+        r,
         volatility,
         200,
         time_to_expiry,
