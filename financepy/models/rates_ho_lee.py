@@ -73,12 +73,13 @@ class ModelRatesHoLee:
         discount_curve: Any
     ) -> float:
 
-        delta = t2 - t1
-        dt = 1e-10
-        pt1 = discount_curve.df(t1)
-        pt1p = discount_curve.df(t1 + dt)
-        pt2 = discount_curve.df(t2)
-        z = p_fast(t1, t2, rt1, delta, pt1, pt1p, pt2, self._sigma)
+        # The discount-factor difference and p_fast's short-rate period
+        # must use the same increment. Avoid cancellation at 1e-10 years.
+        dt = 1e-6
+        pt1 = 1.0 if t1 == 0.0 else discount_curve.df_t(t1)
+        pt1p = discount_curve.df_t(t1 + dt)
+        pt2 = discount_curve.df_t(t2)
+        z = p_fast(t1, t2, rt1, dt, pt1, pt1p, pt2, self._sigma)
         return z
 
     ####################################################################################
@@ -108,6 +109,14 @@ class ModelRatesHoLee:
         sigma = self._sigma
 
         sigmap = sigma * (t_mat - t_exp) * np.sqrt(t_exp)
+
+        if sigmap == 0.0:
+            underlying_pv = face_amount * pt_mat
+            strike_pv = strike_price * pt_exp
+            return {
+                "call": max(underlying_pv - strike_pv, 0.0),
+                "put": max(strike_pv - underlying_pv, 0.0),
+            }
 
         h = (
             np.log((face_amount * pt_mat) / (strike_price * pt_exp)) / sigmap
