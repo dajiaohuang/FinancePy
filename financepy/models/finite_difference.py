@@ -303,8 +303,8 @@ def option_payoff(s, strike, smooth, dig, opt_type_int):
                 ),
             )
 
-        res[0] = 1.0 if s[0] >= strike else 0.0 if dig else max(0.0, s[0] - strike)
-        res[-1] = 1.0 if s[-1] >= strike else 0.0 if dig else max(0.0, s[-1] - strike)
+        res[0] = (1.0 if s[0] >= strike else 0.0) if dig else max(0.0, s[0] - strike)
+        res[-1] = (1.0 if s[-1] >= strike else 0.0) if dig else max(0.0, s[-1] - strike)
 
     if is_put:
         res = 1.0 - res if dig else res - (s - strike)
