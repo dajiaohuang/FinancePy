@@ -82,10 +82,14 @@ class NSSDiscountCurve(DiscountCurve):
         theta_2 = t / self._tau_2
         e_1 = np.exp(-theta_1)
         e_2 = np.exp(-theta_2)
+        loading_1 = np.divide(-np.expm1(-theta_1), theta_1,
+                              out=np.ones_like(theta_1), where=theta_1 != 0.0)
+        loading_2 = np.divide(-np.expm1(-theta_2), theta_2,
+                              out=np.ones_like(theta_2), where=theta_2 != 0.0)
         zero_rate = self._beta_0
-        zero_rate += self._beta_1 * (1.0 - e_1) / theta_1
-        zero_rate += self._beta_2 * ((1.0 - e_1) / theta_1 - e_1)
-        zero_rate += self._beta_3 * ((1.0 - e_2) / theta_2 - e_2)
+        zero_rate += self._beta_1 * loading_1
+        zero_rate += self._beta_2 * (loading_1 - e_1)
+        zero_rate += self._beta_3 * (loading_2 - e_2)
         return zero_rate
 
     ###########################################################################

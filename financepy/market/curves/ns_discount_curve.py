@@ -72,9 +72,11 @@ class NSDiscountCurve(DiscountCurve):
 
         theta = t / self._tau
         e = np.exp(-theta)
+        loading = np.divide(-np.expm1(-theta), theta,
+                            out=np.ones_like(theta), where=theta != 0.0)
         zero_rate = self._beta_0
-        zero_rate += self._beta_1 * (1.0 - e) / theta
-        zero_rate += self._beta_2 * ((1.0 - e) / theta - e)
+        zero_rate += self._beta_1 * loading
+        zero_rate += self._beta_2 * (loading - e)
         return zero_rate
 
     ###########################################################################
