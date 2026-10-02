@@ -226,9 +226,12 @@ class CurveFitNelsonSiegel(CurveFitMethod):
 
         theta = t / tau
         exp_term = np.exp(-theta)
+        loading = np.divide(
+            -np.expm1(-theta), theta, out=np.ones_like(theta), where=theta != 0.0
+        )
         yld = beta_1
-        yld += beta_2 * (1.0 - exp_term) / theta
-        yld += beta_3 * ((1.0 - exp_term) / theta - exp_term)
+        yld += beta_2 * loading
+        yld += beta_3 * (loading - exp_term)
         return yld
 
     def __repr__(self):
@@ -326,10 +329,16 @@ class CurveFitNelsonSiegelSvensson(CurveFitMethod):
         theta2 = t / tau_2
         exp_term1 = np.exp(-theta1)
         exp_term2 = np.exp(-theta2)
+        loading1 = np.divide(
+            -np.expm1(-theta1), theta1, out=np.ones_like(theta1), where=theta1 != 0.0
+        )
+        loading2 = np.divide(
+            -np.expm1(-theta2), theta2, out=np.ones_like(theta2), where=theta2 != 0.0
+        )
         yld = beta_1
-        yld += beta_2 * (1.0 - exp_term1) / theta1
-        yld += beta_3 * ((1.0 - exp_term1) / theta1 - exp_term1)
-        yld += beta_4 * ((1.0 - exp_term2) / theta2 - exp_term2)
+        yld += beta_2 * loading1
+        yld += beta_3 * (loading1 - exp_term1)
+        yld += beta_4 * (loading2 - exp_term2)
         return yld
 
     def __repr__(self):
