@@ -924,6 +924,8 @@ class Bond:
         class BumpedZeroTentCurve:
             def __init__(self, base_curve: DiscountCurve, settle_dt: Date, tenors, node_index: int, bump: float) -> None:
                 self.base_curve = base_curve
+                self.anchor_dt = base_curve.anchor_dt
+                self.curve_dc_type = base_curve.curve_dc_type
                 self.settle_dt = settle_dt
                 self.tenors = tenors
                 self.node_index = node_index
@@ -931,10 +933,10 @@ class Bond:
 
             def df(self, dt):
                 t = (dt - self.settle_dt) / G_DAYS_IN_YEAR
-                if t <= 0.0:
-                    return 1.0
-
                 base_df = self.base_curve.df(dt)
+                if t <= 0.0:
+                    return base_df
+
                 z = zero_rate_from_df(base_df, t)
                 w = tent_weight(t, self.node_index, self.tenors)
                 z_bumped = z + self.bump * w
@@ -1387,7 +1389,9 @@ class Bond:
         bond_price = clean_price + accrued_amount
 
         def _bond_price_diff_from_z_spread(z_spr_try):
-            flat_curve = PWFONFDiscountCurve.flat_curve(settle_dt, z_spr_try)
+            flat_curve = PWFONFDiscountCurve.flat_curve(
+                settle_dt, z_spr_try, discount_curve.curve_dc_type
+            )
             bumped_curve = CompositeDiscountCurve([discount_curve, flat_curve])
             curve_bond_price = self.dirty_price_from_discount_curve(settle_dt, bumped_curve)
             return curve_bond_price - bond_price
