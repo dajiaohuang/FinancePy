@@ -15,7 +15,8 @@ from ...products.bonds.bond import YTMCalcType
 
 
 def validate_yield(ytm):
-    if ytm < -0.20 or ytm > 2.0:
+    ytms = np.asarray(ytm, dtype=float)
+    if np.any(ytms < -0.20) or np.any(ytms > 2.0):
         raise FinError("YTM must be between -20% and +200%")
 
 
@@ -150,7 +151,7 @@ class BondZero:
         The cpn of a zero cpn bond is defined as:
         (par - issue_price) / tenor
         """
-        dc = DayCount(self.dc_type)
+        dc = DayCount(self.curve_dc_type)
         T, _, _ = dc.year_frac(
             self.issue_dt,
             self.maturity_dt,
