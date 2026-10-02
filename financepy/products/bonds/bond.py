@@ -1153,7 +1153,6 @@ class Bond:
 
         px_pv = 0.0
         n_flows = len(self.cpn_dts)
-        cpn_amount = self.cpn / self.freq
 
         # 3. Iterate through all potential flows
         for i in range(n_flows):
@@ -1173,7 +1172,7 @@ class Bond:
                     # Buyer does not receive this coupon
                     flow = 0.0
                 else:
-                    flow = cpn_amount
+                    flow = self.flow_amounts[i]
 
                 # Add principal if it's the maturity date
                 if i == n_flows - 1:
@@ -1337,11 +1336,11 @@ class Bond:
         pv_ibor = 0.0
         prev_dt = self._pcd
 
-        for dt in self.payment_dts[1:]:
+        for dt, flow in zip(self.payment_dts[1:], self.flow_amounts[1:]):
             # coupons paid on a settlement date are paid to the seller
             if dt > settle_dt:
                 df = discount_curve.df(dt)
-                pv_ibor += df * self.cpn / self.freq
+                pv_ibor += df * flow
 
         pv_ibor += discount_curve.df(self.payment_dts[-1])
 
@@ -1446,7 +1445,6 @@ class Bond:
 
         self.accrued_interest(settle_dt, 1.0)
         f = self.freq
-        cpn_flow = self.cpn / f
         pv = 0.0
         curve_dc_type = discount_curve.curve_dc_type
 
@@ -1475,7 +1473,7 @@ class Bond:
                 if cpn_dt == self._ncd and settle_dt > self.ex_div_dt:
                     flow = 0.0
                 else:
-                    flow = cpn_flow
+                    flow = self.flow_amounts[i]
 
                 # Add principal at maturity
                 if i == n_flows - 1:
@@ -1556,9 +1554,6 @@ class Bond:
         check_curve_dt(settle_dt, discount_curve)
         check_curve_dt(settle_dt, survival_curve)
 
-        f = self.freq
-        cpn_flow = self.cpn / f
-
         self.accrued_interest(settle_dt, 1.0)
 
         df_settle = discount_curve.df(settle_dt)
@@ -1582,7 +1577,7 @@ class Bond:
                 # --- Coupon Leg ---
                 # Buyer receives coupon only if bond survives AND it's not ex-div
                 if not (cpn_dt == self._ncd and settle_dt > self.ex_div_dt):
-                    pv_coupons += cpn_flow * df * q
+                    pv_coupons += self.flow_amounts[i] * df * q
 
                 # --- Recovery Leg (Protection) ---
                 # Probability of default in this specific interval [prev_dt, pmt_dt]
