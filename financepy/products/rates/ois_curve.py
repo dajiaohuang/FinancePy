@@ -593,8 +593,8 @@ class OISCurve(DiscountCurve):
 
         for swap in self.used_swaps:
             # We value it as of the start date of the swap
-            v = swap.value(self.anchor_dt, self, self, None, principal=0.0)
-            v = v / swap.notional
+            v = swap.value(self.anchor_dt, self, None)
+            v = v / swap.fixed_leg.notional
             if abs(v) > swap_tol:
                 print(
                     "Swap with maturity " + str(swap.maturity_dt) + " Not Repriced. Has Value",
