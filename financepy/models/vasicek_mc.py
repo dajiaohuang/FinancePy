@@ -1,6 +1,6 @@
 # Copyright (C) 2018, 2019, 2020 Dominic O'Kane
 
-from math import sqrt, exp, expm1
+from math import sqrt, exp, expm1, ceil
 from numba import njit, float64, int64
 import numba as nb
 import numpy as np
@@ -63,7 +63,9 @@ def variancer(
     t: float
 ) -> float:
     """Variance of short rate at later time t"""
-    vr = sigma * sigma * (1.0 - exp(-2.0 * a * t)) / 2.0 / a
+    if a == 0.0:
+        return sigma * sigma * t
+    vr = sigma * sigma * (-expm1(-2.0 * a * t)) / 2.0 / a
     return vr
 
 
@@ -165,16 +167,16 @@ def zero_price_mc(
 ) -> float:
     """Generate zero price by Monte Carlo using Vasicek model"""
     np.random.seed(seed)
-    num_steps = int(t / dt)
-    sigmasqrt_dt = sigma * sqrt(dt)
+    num_steps = int(ceil(t / dt))
     zcb = 0.0
     for _ in nb.prange(num_paths):
         z = np.random.normal(0.0, 1.0, size=num_steps)
         rsum = 0.0
         r = r0
         for i_step in range(0, num_steps):
-            r += a * (b - r) * dt + z[i_step] * sigmasqrt_dt
-            rsum += r * dt
+            step_dt = min(dt, t - i_step * dt)
+            r += a * (b - r) * step_dt + z[i_step] * sigma * sqrt(step_dt)
+            rsum += r * step_dt
         zcb += exp(-rsum)
     zcb /= num_paths
     return zcb
