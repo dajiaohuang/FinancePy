@@ -315,6 +315,32 @@ def option_payoff(s, strike, smooth, dig, opt_type_int):
 ########################################################################################
 
 
+def _deterministic_option_value(spot, strike, expiry, rate, dividend, opt_type, digital):
+    """Discount deterministic cashflows, including optimal American exercise."""
+    american = opt_type in {OptionTypes.AMERICAN_CALL.value, OptionTypes.AMERICAN_PUT.value}
+    times = [expiry]
+    if american:
+        times.append(0.0)
+        if not digital and rate * dividend > 0.0 and rate != dividend:
+            stationary = np.log(dividend * spot / (rate * strike)) / (dividend - rate)
+            if 0.0 < stationary < expiry:
+                times.append(stationary)
+    times = np.array(times)
+    terminal_spots = spot * np.exp((rate - dividend) * times)
+    cashflows = option_payoff(terminal_spots, strike, False, digital, opt_type)[0]
+    value = np.max(np.exp(-rate * times) * cashflows)
+    if american and digital and rate != dividend:
+        crossing = np.log(strike / spot) / (rate - dividend)
+        is_put = opt_type == OptionTypes.AMERICAN_PUT.value
+        # At an interior crossing one side pays one. For a strict put,
+        # the value at the crossing is the limit of valid stopping times.
+        if (0.0 < crossing < expiry
+                or (crossing == 0.0 and is_put and rate < dividend)
+                or (crossing == expiry and (not is_put or rate > dividend))):
+            value = max(value, np.exp(-rate * crossing))
+    return float(value)
+
+
 def black_scholes_fd(
     spot_price,
     volatility,
@@ -360,6 +386,15 @@ def black_scholes_fd(
             digital,
             opt_type,
         )[0, 0]
+
+    if volatility == 0.0:
+        value = _deterministic_option_value(
+            spot_price, strike_price, time_to_expiry, risk_free_rate,
+            dividend_yield, opt_type, digital,
+        )
+        if return_grid:
+            return np.array([spot_price]), np.array([value]), value
+        return value
 
     # Define grid
     std = volatility * (time_to_expiry**0.5)

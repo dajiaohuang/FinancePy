@@ -5,7 +5,7 @@ from numba import njit
 
 from ..utils.math import band_matrix_multiplication
 from ..utils.global_types import OptionTypes
-from .finite_difference import option_payoff, calculate_fd_matrix
+from .finite_difference import option_payoff, calculate_fd_matrix, _deterministic_option_value
 
 ########################################################################################
 
@@ -40,6 +40,15 @@ def black_scholes_fd_psor(
     """
     if isinstance(opt_type, OptionTypes):
         opt_type = opt_type.value
+
+    if time_to_expiry == 0.0:
+        return option_payoff(np.array([spot_price]), strike_price, False, digital, opt_type)[0, 0]
+
+    if volatility == 0.0:
+        return _deterministic_option_value(
+            spot_price, strike_price, time_to_expiry, risk_free_rate,
+            dividend_yield, opt_type, digital,
+        )
 
     # Define grid
     std = volatility * (time_to_expiry**0.5)
