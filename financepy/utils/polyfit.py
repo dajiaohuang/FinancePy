@@ -69,13 +69,10 @@ def _enable_numba() -> None:
     # If your Numba doesn’t support it natively, consider QR or normal equations.
     @nb.njit("f8[:](f8[:,:], f8[:])", cache=True)
     def _fit_x_numba(a, b):
-        # Least squares: fall back to normal equations if needed:
-        # x = solve(a.T @ a, a.T @ b)
-        # Replace with lstsq if your Numba version supports it well.
-        ata = a.T @ a
-        atb = a.T @ b
-        x = np.linalg.solve(ata, atb)
-        return x
+        # Match NumPy's rcond=None threshold without squaring the condition
+        # number or requiring a full-rank, overdetermined sample matrix.
+        rcond = np.finfo(np.float64).eps * max(a.shape[0], a.shape[1])
+        return np.linalg.lstsq(a, b, rcond=rcond)[0]
 
     @nb.njit("f8[:](f8[:], f8[:], i8)", cache=True)
     def _fit_poly_numba(x, y, deg):
